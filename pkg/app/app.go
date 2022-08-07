@@ -60,6 +60,5 @@ func (a *App) Stop(ctx context.Context) error {
 	if ctx == nil {
 		ctx = context.Background()
 	}
-
 	return a.httpServer.Shutdown(ctx)
 }
