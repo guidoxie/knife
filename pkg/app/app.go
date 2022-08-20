@@ -3,6 +3,12 @@ package app
 import (
 	"context"
 	"github.com/guidoxie/knife/pkg/app/http"
+	"github.com/guidoxie/knife/pkg/log"
+	stdHttp "net/http"
+	"os"
+	"os/signal"
+	"syscall"
+	"time"
 )
 
 type IApp interface {
@@ -51,9 +57,24 @@ func (a *App) HttpAddr() string {
 }
 
 func (a *App) Run() {
-	if err := a.httpServer.Run(); err != nil {
-		panic(err)
+	go func() {
+		if err := a.httpServer.Run(); err != nil && err != stdHttp.ErrServerClosed {
+			log.Fatal("HTTP server err:", err)
+		}
+	}()
+	// 监听退出信号
+	quit := make(chan os.Signal)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
+	//
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	log.Info("Shutdown server...")
+	if err := a.Stop(ctx); err != nil {
+		log.Fatal("Server forced to shutdown:", err)
 	}
+	log.Info("Server exiting")
+	a.AfterStop()
 }
 
 func (a *App) Stop(ctx context.Context) error {
@@ -61,4 +82,8 @@ func (a *App) Stop(ctx context.Context) error {
 		ctx = context.Background()
 	}
 	return a.httpServer.Shutdown(ctx)
+}
+
+func (a *App) AfterStop() {
+	log.Sync()
 }

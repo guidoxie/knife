@@ -39,12 +39,12 @@ func (e *Error) MsgF(args []interface{}) string {
 func (e *Error) Details() []string {
 	return e.details
 }
-func (e *Error) WithDetails(details ...string) *Error {
+func (e Error) WithDetails(details ...string) *Error {
 	e.details = []string{}
 	for _, d := range details {
 		e.details = append(e.details, d)
 	}
-	return e
+	return &e
 }
 
 func (e *Error) StatusCode() int {
