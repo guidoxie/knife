@@ -3,6 +3,9 @@ package http
 import (
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"reflect"
+	"runtime"
+	"strings"
 )
 
 const (
@@ -31,9 +34,10 @@ func (r *Group) Use(handlerFunc ...HandlerFunc) IRoute {
 
 func (r *Group) Handle(httpMethod, relativePath string, handlers ...HandlerFunc) IRoute {
 	r.routes = append(r.routes, &route{
-		method:   httpMethod,
-		path:     relativePath,
-		handlers: handlers,
+		method:       httpMethod,
+		path:         relativePath,
+		handlers:     handlers,
+		handlerNames: r.handlerNames(handlers...),
 	})
 	return r
 }
@@ -53,63 +57,70 @@ func (r *Group) Any(relativePath string, handlers ...HandlerFunc) IRoute {
 
 func (r *Group) GET(relativePath string, handlers ...HandlerFunc) IRoute {
 	r.routes = append(r.routes, &route{
-		method:   http.MethodGet,
-		path:     relativePath,
-		handlers: handlers,
+		method:       http.MethodGet,
+		path:         relativePath,
+		handlers:     handlers,
+		handlerNames: r.handlerNames(handlers...),
 	})
 	return r
 }
 
 func (r *Group) POST(relativePath string, handlers ...HandlerFunc) IRoute {
 	r.routes = append(r.routes, &route{
-		method:   http.MethodPost,
-		path:     relativePath,
-		handlers: handlers,
+		method:       http.MethodPost,
+		path:         relativePath,
+		handlers:     handlers,
+		handlerNames: r.handlerNames(handlers...),
 	})
 	return r
 }
 
 func (r *Group) DELETE(relativePath string, handlers ...HandlerFunc) IRoute {
 	r.routes = append(r.routes, &route{
-		method:   http.MethodDelete,
-		path:     relativePath,
-		handlers: handlers,
+		method:       http.MethodDelete,
+		path:         relativePath,
+		handlers:     handlers,
+		handlerNames: r.handlerNames(handlers...),
 	})
 	return r
 }
 
 func (r *Group) PATCH(relativePath string, handlers ...HandlerFunc) IRoute {
 	r.routes = append(r.routes, &route{
-		method:   http.MethodPatch,
-		path:     relativePath,
-		handlers: handlers,
+		method:       http.MethodPatch,
+		path:         relativePath,
+		handlers:     handlers,
+		handlerNames: r.handlerNames(handlers...),
 	})
 	return r
 }
 
 func (r *Group) PUT(relativePath string, handlers ...HandlerFunc) IRoute {
 	r.routes = append(r.routes, &route{
-		method:   http.MethodPut,
-		path:     relativePath,
-		handlers: handlers,
+		method:       http.MethodPut,
+		path:         relativePath,
+		handlers:     handlers,
+		handlerNames: r.handlerNames(handlers...),
 	})
 	return r
 }
 
 func (r *Group) OPTIONS(relativePath string, handlers ...HandlerFunc) IRoute {
 	r.routes = append(r.routes, &route{
-		method:   http.MethodPut,
-		path:     relativePath,
-		handlers: handlers,
+		method:       http.MethodPut,
+		path:         relativePath,
+		handlers:     handlers,
+		handlerNames: r.handlerNames(handlers...),
 	})
 	return r
 }
 
 func (r *Group) HEAD(relativePath string, handlers ...HandlerFunc) IRoute {
 	r.routes = append(r.routes, &route{
-		method:   http.MethodHead,
-		path:     relativePath,
-		handlers: handlers,
+		method:       http.MethodHead,
+		path:         relativePath,
+		handlers:     handlers,
+		handlerNames: r.handlerNames(handlers...),
 	})
 	return r
 }
@@ -154,4 +165,17 @@ func (r *Group) Handlers() []gin.HandlerFunc {
 		}
 	}
 	return handlers
+}
+
+func (r *Group) HandlerNumber() int {
+	return len(r.handlers)
+}
+
+func (r *Group) handlerNames(handlers ...HandlerFunc) []string {
+	handlerNames := make([]string, len(handlers))
+
+	for i, h := range handlers {
+		handlerNames[i] = strings.Trim(runtime.FuncForPC(reflect.ValueOf(h).Pointer()).Name(), "-fm")
+	}
+	return handlerNames
 }

@@ -116,9 +116,15 @@ func Panicf(format string, args ...interface{}) {
 	logger.Panicf(format, args...)
 }
 
-func Recover(info ...string) {
+// 捕获panic
+func Recover(msg ...string) {
+	out := make([]interface{}, 0)
+	for _, m := range msg {
+		out = append(out, m)
+	}
 	if p := recover(); p != nil {
-		logger.Error(p)
+		out = append(out, p)
+		logger.Error(out)
 	}
 }
 

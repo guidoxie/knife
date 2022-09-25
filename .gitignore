@@ -14,5 +14,6 @@
 .DS_Store
 .idea
 .vscode
+config/local.yml
 vendor
 go.sum

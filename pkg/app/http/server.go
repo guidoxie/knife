@@ -2,6 +2,7 @@ package http
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/guidoxie/knife/pkg/log"
 	"time"
 
 	"net/http"
@@ -37,17 +38,17 @@ type Server struct {
 
 type Options struct {
 	WebAddr        string // Web Server 监听地址
-	RunMode        string // gin运行模式
 	ReadTimeout    time.Duration
 	WriteTimeout   time.Duration
 	MaxHeaderBytes int
 }
 
 func NewServer(name string, options ...Options) *Server {
+	// 关闭gin自身的日志
+	gin.SetMode(gin.ReleaseMode)
 	s := &Server{name: name, engine: gin.New()}
 	if len(options) > 0 {
 		s.Addr = options[0].WebAddr
-		gin.SetMode(options[0].RunMode)
 		s.ReadTimeout = options[0].ReadTimeout
 		s.WriteTimeout = options[0].WriteTimeout
 		s.MaxHeaderBytes = options[0].MaxHeaderBytes
@@ -104,7 +105,6 @@ func (s *Server) Run() error {
 	// 注册路由
 	for _, g := range s.GetGroups() {
 		group := s.GetEngine().Group(s.joinPaths(g.basePath), g.Handlers()...)
-
 		for _, r := range g.routes {
 			switch r.method {
 			case ExMethodStatic:
@@ -115,11 +115,13 @@ func (s *Server) Run() error {
 				group.StaticFile(r.path, r.filePath)
 			default:
 				group.Handle(r.method, r.path, r.Handlers()...)
+				log.Infof("%s\t/%s\t--> %v (%d handlers)", r.method, path.Join(s.joinPaths(g.basePath), r.path),
+					r.HandlerNames()[r.HandlerNumber()-1], r.HandlerNumber()+g.HandlerNumber()+len(s.defaultMiddle))
 			}
-
 		}
 	}
 	s.Handler = s.GetEngine()
+	log.Infof("Listening and serving HTTP on %s", s.Addr)
 	if err := s.ListenAndServe(); err != nil {
 		return err
 	}

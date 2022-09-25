@@ -1,3 +1,0 @@
-log:
- type: json
- level: Debug

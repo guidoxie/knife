@@ -26,14 +26,15 @@ type IRoute interface {
 }
 
 type route struct {
-	method   string
-	path     string
-	handlers []HandlerFunc
-	filePath string
-	fs       http.FileSystem
+	method       string
+	path         string
+	handlers     []HandlerFunc
+	handlerNames []string
+	filePath     string
+	fs           http.FileSystem
 }
 
-func (r route) Handlers() []gin.HandlerFunc {
+func (r *route) Handlers() []gin.HandlerFunc {
 	handlers := make([]gin.HandlerFunc, len(r.handlers))
 	for i, h := range r.handlers {
 		handler := h
@@ -42,4 +43,12 @@ func (r route) Handlers() []gin.HandlerFunc {
 		}
 	}
 	return handlers
+}
+
+func (r *route) HandlerNames() []string {
+	return r.handlerNames
+}
+
+func (r *route) HandlerNumber() int {
+	return len(r.handlers)
 }

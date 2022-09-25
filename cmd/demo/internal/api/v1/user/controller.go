@@ -16,7 +16,6 @@ func (u controller) Add(c *http.Context) {
 	}{}
 
 	if err := c.BindJSON(&param); err != nil {
-
 		return
 	}
 	if _, err := u.p.Add(param.Account, param.Password); err != nil {

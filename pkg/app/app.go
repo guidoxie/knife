@@ -44,7 +44,11 @@ func New(name string, options ...http.Options) *App {
 		name:       name,
 		httpServer: http.NewServer(name, options...),
 	}
-	app.httpServer.AddDefaultMiddle(http.Translations())
+	// 添加默认中间件
+	app.httpServer.AddDefaultMiddle(
+		http.AccessLog(),
+		http.Recovery(),
+		http.Translations())
 	return app
 }
 
