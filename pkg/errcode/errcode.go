@@ -2,6 +2,7 @@ package errcode
 
 import (
 	"fmt"
+	"github.com/guidoxie/knife/pkg/log"
 	"net/http"
 )
 
@@ -15,7 +16,7 @@ var codes = map[int]string{}
 
 func NewError(code int, msg string) *Error {
 	if _, ok := codes[code]; ok {
-		panic(fmt.Sprintf("错误码 %d 已经存在，请更换一个", code))
+		log.Panicf("错误码 %d 已经存在，请更换一个", code)
 	}
 	codes[code] = msg
 	return &Error{code: code, msg: msg}

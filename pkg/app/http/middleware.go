@@ -2,6 +2,7 @@ package http
 
 import (
 	"bytes"
+	"context"
 	"github.com/gin-gonic/gin"
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/locales/en"
@@ -79,10 +80,21 @@ func Recovery() HandlerFunc {
 		defer func() {
 			if err := recover(); err != nil {
 				log.Errorf("panic recover err: %v", err)
-				c.OutSysErr(nil)
+				c.OutSysErr()
 				c.Abort()
 			}
 		}()
+		c.Next()
+	}
+}
+
+// 统一超时控制
+func ContextTimeout(t time.Duration) HandlerFunc {
+	return func(c *Context) {
+		ctx, cancel := context.WithTimeout(c.Request.Context(), t)
+		defer cancel()
+
+		c.Request = c.Request.WithContext(ctx)
 		c.Next()
 	}
 }
